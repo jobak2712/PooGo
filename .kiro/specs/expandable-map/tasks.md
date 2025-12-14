@@ -1,0 +1,82 @@
+# Implementation Plan
+
+- [x] 1. Create ExpandableMapView component
+  - [x] 1.1 Create ExpandableMapView.swift with basic structure
+    - Create new file in PooGo/PooGo/
+    - Define view with route, destination, cameraPosition, and userLocation parameters
+    - Add @State for isExpanded and @GestureState for isZooming/isPanning
+    - _Requirements: 1.1, 2.1, 2.2_
+  - [x] 1.2 Implement map content rendering
+    - Add Map view with route polyline
+    - Add user location annotation
+    - Add destination annotation with toilet icon
+    - _Requirements: 1.2, 3.3_
+  - [x] 1.3 Write property test for tap triggers expansion
+    - **Property 1: Tap triggers expansion when not interacting**
+    - **Validates: Requirements 1.1**
+  - [x] 1.4 Write property test for zoom gesture prevents expansion
+    - **Property 3: Zoom gesture prevents expansion**
+    - **Validates: Requirements 2.1**
+  - [x] 1.5 Write property test for pan gesture prevents expansion
+    - **Property 4: Pan gesture prevents expansion**
+    - **Validates: Requirements 2.2**
+
+- [x] 2. Implement gesture recognition logic
+  - [x] 2.1 Add gesture state tracking
+    - Implement @GestureState for zoom detection
+    - Implement @GestureState for pan detection
+    - Create computed isInteracting property
+    - _Requirements: 2.1, 2.2, 2.3_
+  - [x] 2.2 Implement tap gesture handler
+    - Add tap gesture that checks isInteracting before expanding
+    - Ensure tap only triggers when no navigation gestures active
+    - _Requirements: 1.1, 2.1, 2.2_
+  - [x] 2.3 Write property test for gesture completion preserves dimensions
+    - **Property 5: Gesture completion preserves map dimensions**
+    - **Validates: Requirements 2.3**
+
+- [x] 3. Create FullScreenMapView component
+  - [x] 3.1 Create FullScreenMapView.swift
+    - Create new file in PooGo/PooGo/
+    - Define view with route, destination, userLocation, and onClose parameters
+    - Add @State for cameraPosition
+    - _Requirements: 1.2, 1.3, 1.4_
+  - [x] 3.2 Implement full screen map content
+    - Add Map view covering full screen
+    - Include route polyline, user location, and destination annotations
+    - Add close button overlay in top-left corner
+    - _Requirements: 1.2, 1.3, 3.1, 3.2, 3.3_
+  - [x] 3.3 Write property test for data consistency
+    - **Property 2: Data consistency between mini and full screen maps**
+    - **Validates: Requirements 1.2**
+  - [x] 3.4 Write property test for required annotations
+    - **Property 6: Full screen map displays required annotations**
+    - **Validates: Requirements 3.3**
+
+- [x] 4. Integrate ExpandableMapView into DirectionsView
+  - [x] 4.1 Replace existing Map in DirectionsView
+    - Import ExpandableMapView
+    - Replace the inline Map code with ExpandableMapView
+    - Pass route, destination, cameraPosition, and userLocation
+    - _Requirements: 1.1, 1.2, 1.4_
+  - [x] 4.2 Add sheet presentation for FullScreenMapView
+    - Add .sheet modifier triggered by isExpanded state
+    - Pass required data to FullScreenMapView
+    - Handle onClose to dismiss sheet
+    - _Requirements: 1.3, 1.4, 3.4_
+
+- [x] 5. Checkpoint - Ensure all tests pass
+  - Ensure all tests pass, ask the user if questions arise.
+
+- [x] 6. Write unit tests
+  - [x] 6.1 Write unit tests for ExpandableMapView
+    - Test initialization with various parameters
+    - Test close button functionality
+    - _Requirements: 1.1, 1.3_
+  - [x] 6.2 Write unit tests for FullScreenMapView
+    - Test view renders with required elements
+    - Test onClose callback is invoked
+    - _Requirements: 1.3, 3.3_
+
+- [x] 7. Final Checkpoint - Ensure all tests pass
+  - Ensure all tests pass, ask the user if questions arise.

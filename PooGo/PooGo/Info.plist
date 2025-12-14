@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>comgooglemaps</string>
+		<string>googlemaps</string>
+	</array>
+	<key>NSUserNotificationsUsageDescription</key>
+	<string>PooGo sends notifications when a toilet is found nearby.</string>
+	<key>UIBackgroundModes</key>
+	<array/>
+</dict>
+</plist>
