@@ -159,7 +159,6 @@ class LocationService: NSObject, ObservableObject, CLLocationManagerDelegate {
             
             if !allResults.isEmpty {
                 ToiletCache.shared.cacheToilets(allResults, near: location)
-                print("Prefetched \(allResults.count) toilet locations (including restaurants)")
             }
         }
     }
@@ -201,6 +200,6 @@ class LocationService: NSObject, ObservableObject, CLLocationManagerDelegate {
     }
     
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        print("Location error: \(error.localizedDescription)")
+        // Location error handled silently
     }
 }

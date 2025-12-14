@@ -45,7 +45,7 @@ fileprivate class LocationManager: NSObject, ObservableObject, CLLocationManager
     }
     
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        print("Failed to find user's location: \(error.localizedDescription)")
+        // Location error handled silently
     }
 }
 

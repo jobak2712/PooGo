@@ -134,9 +134,6 @@ class ToiletReliabilityService: ObservableObject {
                     self?.notToiletCounts[rating.toilet_id] = rating.not_toilet_count
                 }
                 self?.saveBlacklist()
-                if !cloudRatings.isEmpty {
-                    print("☁️ Synced \(cloudRatings.count) blacklisted toilets from cloud")
-                }
             }
         }
     }
@@ -457,7 +454,6 @@ class ToiletReliabilityService: ObservableObject {
         // Blacklist if threshold reached
         if newCount >= blacklistThreshold {
             blacklist.insert(toiletId)
-            print("🚫 Blacklisted toilet: \(toiletId) after \(newCount) 'Not a Toilet' reports")
         }
         
         saveBlacklist()

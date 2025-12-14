@@ -30,7 +30,6 @@ final class PooGoNearestToiletEngine: NSObject, ObservableObject, CLLocationMana
     // Debug tracking
     private var debugLog: [String] = []
     private func log(_ message: String) {
-        print(message)
         logger.info("\(message)")
         debugLog.append(message)
     }
@@ -75,14 +74,10 @@ final class PooGoNearestToiletEngine: NSObject, ObservableObject, CLLocationMana
     /// Call this early (e.g., on app launch) to start warming up GPS
     func prewarmLocation() {
         let status = locationManager.authorizationStatus
-        print("🌡️ Pre-warm called, authorization status: \(status.rawValue)")
         
         guard status == .authorizedWhenInUse || status == .authorizedAlways else {
-            print("⚠️ Not authorized yet, will prewarm when authorized")
             return
         }
-        
-        print("🌡️ Pre-warming GPS...")
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
         locationManager.distanceFilter = kCLDistanceFilterNone
         locationManager.startUpdatingLocation()
@@ -100,10 +95,8 @@ final class PooGoNearestToiletEngine: NSObject, ObservableObject, CLLocationMana
     // Called when authorization changes - start prewarming if newly authorized
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         let status = manager.authorizationStatus
-        print("📍 Authorization changed to: \(status.rawValue)")
         
         if status == .authorizedWhenInUse || status == .authorizedAlways {
-            print("✅ Authorized! Starting GPS prewarm...")
             prewarmLocation()
         }
     }
@@ -135,7 +128,6 @@ final class PooGoNearestToiletEngine: NSObject, ObservableObject, CLLocationMana
         }
 
         // Cold start - use longer timeout to let GPS warm up
-        print("🥶 Cold GPS start - using extended timeout")
         startLocationRequest(completion: completion, timeout: coldStartTimeout)
     }
     
@@ -157,13 +149,10 @@ final class PooGoNearestToiletEngine: NSObject, ObservableObject, CLLocationMana
             self.locationTimeoutTimer = nil
             // Prefer the best effort we captured during updates
             if let best = self.bestEffortLocation {
-                print("⏱️ Timeout - using best effort location (acc: \(Int(best.horizontalAccuracy))m)")
                 completion(best)
             } else if let last = self.currentLocation {
-                print("⏱️ Timeout - using last known location")
                 completion(last)
             } else {
-                print("⏱️ Timeout - no location available")
                 completion(nil)
             }
             self.locationCompletion = nil
@@ -185,7 +174,6 @@ final class PooGoNearestToiletEngine: NSObject, ObservableObject, CLLocationMana
         // Mark location as ready once we have any valid location
         if location.horizontalAccuracy > 0 && location.horizontalAccuracy <= 500 {
             if !isLocationReady {
-                print("📍 Location ready (acc: \(Int(location.horizontalAccuracy))m)")
                 DispatchQueue.main.async {
                     self.isLocationReady = true
                 }
@@ -215,7 +203,6 @@ final class PooGoNearestToiletEngine: NSObject, ObservableObject, CLLocationMana
     }
 
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        print("❌ Location error: \(error.localizedDescription)")
         locationTimeoutTimer?.invalidate()
         locationTimeoutTimer = nil
         locationManager.stopUpdatingLocation()
@@ -335,7 +322,6 @@ final class PooGoNearestToiletEngine: NSObject, ObservableObject, CLLocationMana
            let lastLoc = lastSelectedLocation,
            location.distance(from: lastLoc) < consistencyRadius
         {
-            print("📍 Returning cached result (user hasn't moved)")
             finishWithResult(lastDest, completion: completion)
             return
         }
@@ -344,16 +330,13 @@ final class PooGoNearestToiletEngine: NSObject, ObservableObject, CLLocationMana
         log("🚽 Quick POI search...")
         quickRestroomSearch(from: location) { [weak self] poiResult in
             guard let self = self else { return }
-            if let destination = poiResult {
-                self.log("🚽 POI found: \(destination.name)")
+                    if let destination = poiResult {
                 // Cache for consistency
                 self.lastSelectedDestination = destination
                 self.lastSelectedLocation = location
                 self.finishWithResult(destination, completion: completion)
                 return
             }
-            
-            self.log("🚽 POI search: no results")
 
             // If POI search found nothing, consider cache next (only if reasonably close)
             if let cached = ToiletCache.shared.getNearestCachedToilet(from: location) {
@@ -365,7 +348,6 @@ final class PooGoNearestToiletEngine: NSObject, ObservableObject, CLLocationMana
                         longitude: cached.longitude,
                         address: cached.address
                     )
-                    self.log("📍 Using cache: \(cached.name)")
                     self.lastSelectedDestination = destination
                     self.lastSelectedLocation = location
                     self.finishWithResult(destination, completion: completion)
@@ -374,10 +356,8 @@ final class PooGoNearestToiletEngine: NSObject, ObservableObject, CLLocationMana
             }
 
             // Phase 2: Perform fresh search
-            self.log("🔍 Starting tiered search...")
             self.performTieredSearch(from: location, completion: completion)
         }
-        return
     }
 
     // MARK: - Tiered Search
@@ -428,7 +408,6 @@ final class PooGoNearestToiletEngine: NSObject, ObservableObject, CLLocationMana
 
             // Filter and sort
             let filtered = self.filterResults(results, from: location)
-            print("🔍 After filtering: \(filtered.count) results")
 
             let sorted = self.sortResults(filtered, from: location)
 
@@ -440,7 +419,7 @@ final class PooGoNearestToiletEngine: NSObject, ObservableObject, CLLocationMana
                     address: self.formatAddress(for: best)
                 )
 
-                print("✅ Selected: \(destination.name) at \(destination.latitude), \(destination.longitude)")
+
 
                 // Cache for consistency
                 self.lastSelectedDestination = destination
@@ -483,7 +462,7 @@ final class PooGoNearestToiletEngine: NSObject, ObservableObject, CLLocationMana
         executeSearchQueries(facilityQueries, radius: maxAcceptableDistance, from: location) { [weak self] results in
             guard let self = self else { return }
             
-            print("🏢 Facilities search returned \(results.count) results")
+
             
             let filtered = self.filterResults(results, from: location)
             let sorted = self.sortResults(filtered, from: location)
@@ -510,7 +489,6 @@ final class PooGoNearestToiletEngine: NSObject, ObservableObject, CLLocationMana
                 self.finishWithResult(destination, completion: completion)
             } else {
                 // Last resort: try simple "toilet" search with larger radius
-                print("🆘 All searches failed, trying last resort simple search...")
                 self.performLastResortSearch(from: location, completion: completion)
             }
         }
@@ -529,14 +507,8 @@ final class PooGoNearestToiletEngine: NSObject, ObservableObject, CLLocationMana
         request.region = region
         
         let search = MKLocalSearch(request: request)
-        search.start { [weak self] response, error in
+        search.start { [weak self] response, _ in
             guard let self = self else { return }
-            
-            if let error = error {
-                print("❌ Last resort search error: \(error.localizedDescription)")
-            }
-            
-            print("🆘 Last resort search returned \(response?.mapItems.count ?? 0) results")
             
             if let items = response?.mapItems,
                let best = items.min(by: { a, b in
@@ -675,13 +647,10 @@ final class PooGoNearestToiletEngine: NSObject, ObservableObject, CLLocationMana
                     return
                 }
                 
-                // Log for debugging
                 let itemCount = response?.mapItems.count ?? 0
-                print("🚽 Quick restroom search attempt \(attempt): \(itemCount) results")
                 
                 // If error or no results on first attempt, retry once
                 if (error != nil || itemCount == 0) && attempt < 2 {
-                    print("🔄 Quick search retry...")
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                         self.quickRestroomSearchWithRetry(from: location, attempt: attempt + 1, completion: completion)
                     }
@@ -863,9 +832,9 @@ final class PooGoNearestToiletEngine: NSObject, ObservableObject, CLLocationMana
     }
 
     private func debugPrintLocation(_ prefix: String, _ location: CLLocation?) {
-        guard let l = location else { print("\(prefix): <nil>"); return }
+        guard let l = location else { return }
         let age = -l.timestamp.timeIntervalSinceNow
-        print("\(prefix): (lat: \(l.coordinate.latitude), lon: \(l.coordinate.longitude)), acc: \(Int(l.horizontalAccuracy))m, age: \(String(format: "%.1f", age))s")
+        logger.debug("\(prefix): (lat: \(l.coordinate.latitude), lon: \(l.coordinate.longitude)), acc: \(Int(l.horizontalAccuracy))m, age: \(String(format: "%.1f", age))s")
     }
 
     // MARK: - Clear State

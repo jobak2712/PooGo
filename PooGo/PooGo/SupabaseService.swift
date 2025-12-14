@@ -126,10 +126,9 @@ class SupabaseService {
                         self?.featureFlags[flag.flag_name] = flag.is_enabled
                     }
                     self?.cacheFeatureFlags()
-                    print("🚩 Loaded \(flags.count) feature flags from cloud")
                 }
             } catch {
-                print("Feature flags decode error: \(error)")
+                // Feature flags decode error handled silently
             }
         }.resume()
     }
@@ -158,15 +157,12 @@ class SupabaseService {
     ) {
         // Check feature flag first (default to TRUE for now to ensure it works)
         let flagEnabled = isFeatureEnabled("save_search_requests", defaultValue: true)
-        print("🚩 save_search_requests flag: \(flagEnabled)")
         guard flagEnabled else {
-            print("⏭️ Skipping search request save - feature flag disabled")
             return
         }
         
         let endpoint = "/rest/v1/search_requests"
         guard let url = URL(string: endpoint, relativeTo: baseURL) else {
-            print("❌ Invalid URL for search_requests")
             return
         }
         
@@ -188,28 +184,12 @@ class SupabaseService {
         
         do {
             request.httpBody = try JSONEncoder().encode(searchRequest)
-            print("📤 Sending search request with \(locations.count) locations to Supabase...")
         } catch {
-            print("❌ Search request encode error: \(error)")
             return
         }
         
-        session.dataTask(with: request) { data, response, error in
-            if let error = error {
-                print("❌ Search request network error: \(error.localizedDescription)")
-                return
-            }
-            
-            if let httpResponse = response as? HTTPURLResponse {
-                if httpResponse.statusCode == 201 {
-                    print("✅ Saved search request with \(locations.count) locations")
-                } else {
-                    print("❌ Search request failed with status: \(httpResponse.statusCode)")
-                    if let data = data, let body = String(data: data, encoding: .utf8) {
-                        print("❌ Response body: \(body)")
-                    }
-                }
-            }
+        session.dataTask(with: request) { _, _, _ in
+            // Response handled silently
         }.resume()
     }
     
@@ -332,10 +312,8 @@ class SupabaseService {
             return
         }
         
-        session.dataTask(with: request) { _, response, error in
-            if error == nil, let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 201 {
-                print("📍 Saved discovered toilet to cloud: \(name)")
-            }
+        session.dataTask(with: request) { _, _, _ in
+            // Response handled silently
         }.resume()
     }
     
@@ -381,9 +359,8 @@ class SupabaseService {
         request.addValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         
-        session.dataTask(with: request) { data, response, error in
+        session.dataTask(with: request) { data, _, error in
             guard let data = data, error == nil else {
-                print("Supabase fetch error: \(error?.localizedDescription ?? "unknown")")
                 completion(nil)
                 return
             }
@@ -392,7 +369,6 @@ class SupabaseService {
                 let ratings = try JSONDecoder().decode([CloudToiletRating].self, from: data)
                 completion(ratings.first)
             } catch {
-                print("Supabase decode error: \(error)")
                 completion(nil)
             }
         }.resume()
@@ -567,16 +543,11 @@ class SupabaseService {
         do {
             request.httpBody = try JSONEncoder().encode(rating)
         } catch {
-            print("Supabase encode error: \(error)")
             return
         }
         
-        session.dataTask(with: request) { _, response, error in
-            if let error = error {
-                print("Supabase insert error: \(error)")
-            } else if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 201 {
-                print("✅ Synced toilet rating to cloud: \(toiletId)")
-            }
+        session.dataTask(with: request) { _, _, _ in
+            // Response handled silently
         }.resume()
     }
     
@@ -613,15 +584,8 @@ class SupabaseService {
             return
         }
         
-        session.dataTask(with: request) { _, response, error in
-            if let error = error {
-                print("Supabase update error: \(error)")
-            } else {
-                print("✅ Updated toilet rating in cloud: \(toiletId)")
-                if isBlacklisted {
-                    print("🚫 Toilet blacklisted globally: \(toiletId)")
-                }
-            }
+        session.dataTask(with: request) { _, _, _ in
+            // Response handled silently
         }.resume()
     }
 }

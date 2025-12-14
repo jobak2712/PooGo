@@ -105,14 +105,10 @@ class MapLauncher: NSObject, ObservableObject {
             self.isSearching = true
         }
         
-        print("🔎 [MapLauncher] Starting toilet search...")
-
         // Get current location - if nil, wait for GPS to warm up
         if let currentLocation = LocationService.shared.currentLocation {
-            print("📍 [MapLauncher] Have location: \(currentLocation.coordinate.latitude), \(currentLocation.coordinate.longitude)")
             proceedWithLocation(currentLocation)
         } else {
-            print("⏳ [MapLauncher] No location yet, waiting for GPS...")
             // Start location updates and wait
             LocationService.shared.startMonitoring()
             waitForLocationThenSearch(attempts: 0, maxAttempts: 10)
@@ -122,13 +118,11 @@ class MapLauncher: NSObject, ObservableObject {
     /// Polls for location every 0.5 seconds
     private func waitForLocationThenSearch(attempts: Int, maxAttempts: Int) {
         if let location = LocationService.shared.currentLocation {
-            print("✅ [MapLauncher] Got location after \(attempts) attempts")
             proceedWithLocation(location)
             return
         }
         
         if attempts >= maxAttempts {
-            print("⏱️ [MapLauncher] Timeout waiting for location, requesting fresh...")
             // Fall back to requesting single location
             LocationService.shared.requestSingleLocation { [weak self] location in
                 guard let self = self else { return }
@@ -247,7 +241,6 @@ class MapLauncher: NSObject, ObservableObject {
             // All tiers exhausted - retry entire search if this is first attempt
             // MKLocalSearch sometimes needs a "warm up" on first call
             if retryCount < 2 {
-                print("🔄 All tiers empty, retrying entire search (attempt \(retryCount + 2))...")
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
                     self?.performTieredSearch(from: location, tierIndex: 0, retryCount: retryCount + 1)
                 }
