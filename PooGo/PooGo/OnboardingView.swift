@@ -158,6 +158,15 @@ struct OnboardingView: View {
                 }
                 .foregroundColor(Color(red: 0.6, green: 0.6, blue: 0.6))
 
+                Spacer().frame(height: 20)
+
+                // Skip option for users who don't want to grant location
+                Button(action: skipOnboarding) {
+                    Text("Not now")
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundColor(Color(red: 0.5, green: 0.5, blue: 0.5))
+                }
+
                 Spacer()
                 Spacer()
             }
@@ -175,6 +184,16 @@ struct OnboardingView: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
             PooGoNearestToiletEngine.shared.prewarmLocation()
         }
+
+        withAnimation(.easeOut(duration: 0.3)) {
+            isOnboardingComplete = true
+        }
+    }
+
+    private func skipOnboarding() {
+        // User chose not to grant location - still complete onboarding
+        // They can enable location later in Settings if they change their mind
+        UserDefaults.standard.set(true, forKey: "onboarding_complete")
 
         withAnimation(.easeOut(duration: 0.3)) {
             isOnboardingComplete = true
