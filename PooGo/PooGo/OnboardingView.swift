@@ -99,13 +99,13 @@ struct OnboardingView: View {
 
                 Spacer().frame(height: 32)
 
-                // Enable Location Button
+                // Continue Button
                 Button(action: completeOnboarding) {
                     HStack(spacing: 10) {
-                        Image(systemName: "location.fill")
+                        Image(systemName: "arrow.right")
                             .font(.system(size: 18, weight: .semibold))
 
-                        Text("Enable Location")
+                        Text("Continue")
                             .font(.system(size: 17, weight: .semibold))
                     }
                     .foregroundColor(.white)
